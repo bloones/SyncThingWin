@@ -39,10 +39,19 @@
     <ApplicationIcon>App.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.2\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,12 +62,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="frmGUI.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmGUI.Designer.cs">
-      <DependentUpon>frmGUI.cs</DependentUpon>
-    </Compile>
     <Compile Include="frmInstall.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -85,9 +88,6 @@
     <Compile Include="SyngThingService.Designer.cs">
       <DependentUpon>SyngThingService.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="frmGUI.resx">
-      <DependentUpon>frmGUI.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmInstall.resx">
       <DependentUpon>frmInstall.cs</DependentUpon>
     </EmbeddedResource>
@@ -110,6 +110,7 @@
     <EmbeddedResource Include="SyngThingService.resx">
       <DependentUpon>SyngThingService.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

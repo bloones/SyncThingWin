@@ -41,6 +41,11 @@
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.icoTray = new System.Windows.Forms.NotifyIcon(this.components);
 			this.timReferesh = new System.Windows.Forms.Timer(this.components);
+			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+			this.mnuShutdown = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuUpgrade = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuRestart = new System.Windows.Forms.ToolStripMenuItem();
+			this.timStatus = new System.Windows.Forms.Timer(this.components);
 			this.mnuTray.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -63,13 +68,17 @@
 			this.mnuTray.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.showConsoleToolStripMenuItem,
             this.showGuiToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.mnuRestart,
+            this.mnuUpgrade,
+            this.mnuShutdown,
             this.toolStripSeparator1,
             this.stopServiceToolStripMenuItem,
             this.startServiceToolStripMenuItem,
             this.toolStripSeparator2,
             this.exitToolStripMenuItem});
 			this.mnuTray.Name = "mnuTray";
-			this.mnuTray.Size = new System.Drawing.Size(150, 126);
+			this.mnuTray.Size = new System.Drawing.Size(150, 198);
 			this.mnuTray.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTray_Opening);
 			// 
 			// showConsoleToolStripMenuItem
@@ -102,7 +111,7 @@
 			// 
 			this.startServiceToolStripMenuItem.Name = "startServiceToolStripMenuItem";
 			this.startServiceToolStripMenuItem.Size = new System.Drawing.Size(149, 22);
-			this.startServiceToolStripMenuItem.Text = "Sta&rt Service";
+			this.startServiceToolStripMenuItem.Text = "S&tart Service";
 			this.startServiceToolStripMenuItem.Click += new System.EventHandler(this.startServiceToolStripMenuItem_Click);
 			// 
 			// toolStripSeparator2
@@ -119,6 +128,7 @@
 			// 
 			// icoTray
 			// 
+			this.icoTray.BalloonTipTitle = "SyncThing";
 			this.icoTray.ContextMenuStrip = this.mnuTray;
 			this.icoTray.Icon = ((System.Drawing.Icon)(resources.GetObject("icoTray.Icon")));
 			this.icoTray.Text = "SyncThing";
@@ -129,6 +139,37 @@
 			// 
 			this.timReferesh.Interval = 2000;
 			this.timReferesh.Tick += new System.EventHandler(this.timReferesh_Tick);
+			// 
+			// toolStripSeparator3
+			// 
+			this.toolStripSeparator3.Name = "toolStripSeparator3";
+			this.toolStripSeparator3.Size = new System.Drawing.Size(146, 6);
+			// 
+			// mnuShutdown
+			// 
+			this.mnuShutdown.Name = "mnuShutdown";
+			this.mnuShutdown.Size = new System.Drawing.Size(149, 22);
+			this.mnuShutdown.Text = "Shut&down";
+			this.mnuShutdown.Click += new System.EventHandler(this.mnuShutdown_Click);
+			// 
+			// mnuUpgrade
+			// 
+			this.mnuUpgrade.Name = "mnuUpgrade";
+			this.mnuUpgrade.Size = new System.Drawing.Size(149, 22);
+			this.mnuUpgrade.Text = "&Upgrade";
+			this.mnuUpgrade.Click += new System.EventHandler(this.mnuUpgrade_Click);
+			// 
+			// mnuRestart
+			// 
+			this.mnuRestart.Name = "mnuRestart";
+			this.mnuRestart.Size = new System.Drawing.Size(149, 22);
+			this.mnuRestart.Text = "&Restart";
+			this.mnuRestart.Click += new System.EventHandler(this.mnuRestart_Click);
+			// 
+			// timStatus
+			// 
+			this.timStatus.Interval = 200;
+			this.timStatus.Tick += new System.EventHandler(this.timStatus_Tick);
 			// 
 			// frmMain
 			// 
@@ -142,6 +183,7 @@
 			this.Text = "SyncThing";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMain_FormClosing);
 			this.Load += new System.EventHandler(this.frmMain_Load);
+			this.Shown += new System.EventHandler(this.frmMain_Shown);
 			this.VisibleChanged += new System.EventHandler(this.frmMain_VisibleChanged);
 			this.mnuTray.ResumeLayout(false);
 			this.ResumeLayout(false);
@@ -162,6 +204,11 @@
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.NotifyIcon icoTray;
 		private System.Windows.Forms.Timer timReferesh;
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+		private System.Windows.Forms.ToolStripMenuItem mnuRestart;
+		private System.Windows.Forms.ToolStripMenuItem mnuUpgrade;
+		private System.Windows.Forms.ToolStripMenuItem mnuShutdown;
+		private System.Windows.Forms.Timer timStatus;
 	}
 }
 

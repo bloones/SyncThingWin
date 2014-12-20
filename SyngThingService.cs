@@ -5,8 +5,12 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
+using System.Xml;
 
 namespace SyncThingTray
 {
@@ -27,6 +31,7 @@ namespace SyncThingTray
 				ProcessStartInfo pinfo = new ProcessStartInfo(Program.SyncExePath, "-home=\"" + Program.SyncConfigPath + "\"");
 				pinfo.WindowStyle = ProcessWindowStyle.Hidden;
 				pinfo.RedirectStandardOutput = true;
+				pinfo.RedirectStandardInput = true;
 				pinfo.UseShellExecute = false;
 				syncthing = new Process();
 				syncthing.EnableRaisingEvents = true;
@@ -35,6 +40,7 @@ namespace SyncThingTray
 				syncthing.StartInfo = pinfo;
 				syncthing.Start();
 				syncthing.BeginOutputReadLine();
+				syncthing.PriorityClass = Program.SyncPriority;
 			}
 		}
 
@@ -53,13 +59,119 @@ namespace SyncThingTray
 			if (!syncthing.HasExited)
 			{
 				syncthing.CancelOutputRead();
-				syncthing.Kill();
-				foreach (var proc in Process.GetProcesses().Where(p => p.StartInfo.FileName == Program.SyncExePath))
-					if (!proc.HasExited)
-						proc.Kill();
+
+				var res = ShutdownProgram();
+				if (res == null)
+				{
+					syncthing.WaitForExit(2000);
+				}
+				else
+				{
+					this.EventLog.WriteEntry("An error occured when trying to shutdown the syncthing.exe process.\n" + res, EventLogEntryType.Error);
+				}
+
+				if (!syncthing.HasExited)
+				{
+					try
+					{
+						StopProgram(syncthing);
+					}
+					catch (Exception x)
+					{
+						this.EventLog.WriteEntry("An error occured when trying to stop the syncthing.exe process.\nException: (" + x.GetType().ToString() + ") " + x.Message, EventLogEntryType.Error);
+					}
+					if (!syncthing.HasExited)
+					{
+						syncthing.Kill();
+						foreach (var proc in Process.GetProcesses().Where(p => p.StartInfo.FileName == Program.SyncExePath))
+							if (!proc.HasExited)
+								proc.Kill();
+						this.EventLog.WriteEntry("The syncthing.exe process could not be stopped gracefully and had to be killed", EventLogEntryType.Error);
+						syncthing.WaitForExit(1500);
+					}
+					else
+						this.EventLog.WriteEntry("The syncthing.exe process could not be shutdown and had to be closed gracefully", EventLogEntryType.Warning);
+				}
 			}
 			syncthing.Dispose();
 			File.Delete(Program.MonitorFile);
 		}
+
+		enum CtrlTypes : uint
+		{
+			CTRL_C_EVENT = 0,
+			CTRL_BREAK_EVENT,
+			CTRL_CLOSE_EVENT,
+			CTRL_LOGOFF_EVENT = 5,
+			CTRL_SHUTDOWN_EVENT
+		}
+
+		[DllImport("kernel32.dll")]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool GenerateConsoleCtrlEvent(CtrlTypes dwCtrlEvent, uint dwProcessGroupId);
+		[DllImport("kernel32.dll", SetLastError = true)]
+		static extern bool AttachConsole(uint dwProcessId);
+		[DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
+		static extern bool FreeConsole();
+		[DllImport("Kernel32")]
+		private static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
+
+
+		static void StopProgram(Process proc)
+		{
+			if (AttachConsole((uint)proc.Id))
+			{
+				SetConsoleCtrlHandler(null, true);
+				GenerateConsoleCtrlEvent(CtrlTypes.CTRL_C_EVENT, 0);
+				proc.WaitForExit(2000);
+				FreeConsole();
+				SetConsoleCtrlHandler(null, false);
+			}
+		}
+
+		static string ShutdownProgram()
+		{
+			string cfgpath = Path.Combine(Program.SyncConfigPath, "config.xml");
+			if (File.Exists(cfgpath))
+			{
+				string url, key;
+				XmlDocument xml = new XmlDocument();
+				xml.Load(cfgpath);
+				XmlElement xr = xml.DocumentElement;
+				var xgs = xr.GetElementsByTagName("gui");
+				if (xgs.Count == 1)
+				{
+					XmlElement xg = (XmlElement)xgs[0];
+					string tls = xg.GetAttribute("tls");
+					var xas = xg.GetElementsByTagName("address");
+					if (xas.Count == 1)
+						url = "http://" + xas[0].InnerText;
+					else
+						return "The http address of Syncthing could not be found in the configuration";
+					xas = xg.GetElementsByTagName("apikey");
+					if (xas.Count == 1)
+						key = xas[0].InnerText;
+					else
+						return "Could not find the API Key in the configuration: Ensure that an API key was generated in the syncthing GUI";
+					HttpClient client = new HttpClient();
+					client.BaseAddress = new Uri(url);
+					client.DefaultRequestHeaders.Accept.Clear();
+					client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+					client.DefaultRequestHeaders.Add("X-API-Key", key);
+					HttpContent cnt = new ByteArrayContent(new byte[0]);
+					var res = client.PostAsync("rest/shutdown", cnt);
+					if (res.Wait(2000))
+						return res.Result.IsSuccessStatusCode ? null : "Error: " + res.Result.ToString();
+					else
+						return null;
+				}
+				else
+					return "The Syncthing configuration cannot be retreived as the gui element could not be found";
+			}
+			else
+				return "The configuration file could not be found: " + cfgpath;
+
+		}
+
 	}
 }

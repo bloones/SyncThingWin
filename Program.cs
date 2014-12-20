@@ -9,6 +9,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.Security.Principal;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace SyncThingTray
 {
@@ -27,22 +28,34 @@ namespace SyncThingTray
 			{
 				if (Args[0].ToLower() == "install")
 				{
+					if (!IsUserAdministrator) { RunAsAdministrator(Args); return; }
 					InstallService();
 					return;
 				}
 				else if (Args[0].ToLower() == "uninstall")
 				{
+					if (!IsUserAdministrator) { RunAsAdministrator(Args); return; }
 					UninstallService();
 					return;
 				}
 				else if (Args[0].ToLower() == "start")
 				{
+					if (!IsUserAdministrator) { RunAsAdministrator(Args); return; }
 					StartService();
 					return;
 				}
 				else if (Args[0].ToLower() == "stop")
 				{
+					if (!IsUserAdministrator) { RunAsAdministrator(Args); return; }
 					StopService();
+					return;
+				}
+				else if (Args[0].ToLower() == "configure")
+				{
+					if (!IsUserAdministrator) { RunAsAdministrator(Args); return; }
+					var f = new frmInstall();
+					f.SetForm();
+					Application.Run(f);
 					return;
 				}
 			}
@@ -67,32 +80,32 @@ namespace SyncThingTray
 			return Controller.Status == ServiceControllerStatus.Running;
 		}
 
-		static AssemblyInstaller GetInstaller()
+		public static void InstallService()
 		{
-			AssemblyInstaller installer = new AssemblyInstaller(
-					typeof(SyngThingService).Assembly, null);
-			installer.UseNewContext = true;
-			return installer;
+			InstallService(ServiceStartMode.Automatic,false, ServiceAccount.LocalSystem, null, null);
 		}
 
-		public static void InstallService()
+		public static void InstallService(ServiceStartMode StartMode,bool DelayedStart, ServiceAccount Account, string UserName, string Password)
 		{
 			if (IsInstalled) return;
 			try
 			{
-				using (AssemblyInstaller installer = GetInstaller())
+				string path = "/assemblypath=" + Assembly.GetEntryAssembly().Location;
+				using (var iGbl = new TransactedInstaller())
+				using (var iSP = new System.ServiceProcess.ServiceProcessInstaller())
+				using (var iS = new System.ServiceProcess.ServiceInstaller())
 				{
-					IDictionary state = new Hashtable();
-					try
-					{
-						installer.Install(state);
-						installer.Commit(state);
-					}
-					catch
-					{
-						try { installer.Rollback(state); }
-						catch { } throw;
-					}
+					iSP.Account = Account;
+					iSP.Password = Password;
+					iSP.Username = UserName;
+					iS.Description = "Start the SyncThing executable in the background and allow monitoring";
+					iS.DisplayName = "SyncThing synchronization launcher";
+					iS.ServiceName = "SyncThingService";
+					iS.StartType = StartMode;
+					iS.DelayedAutoStart = DelayedStart;
+					iGbl.Installers.AddRange(new System.Configuration.Install.Installer[] { iSP, iS });
+					iGbl.Context = new InstallContext(null, new[] { path });
+					iGbl.Install(new Hashtable());
 				}
 			}
 			catch { throw; }
@@ -103,11 +116,15 @@ namespace SyncThingTray
 			if (!IsInstalled) return;
 			try
 			{
-				using (AssemblyInstaller installer = GetInstaller())
+				string path = "/assemblypath=" + Assembly.GetEntryAssembly().Location;
+				using (var iGbl = new TransactedInstaller())
+				using (var iSP = new System.ServiceProcess.ServiceProcessInstaller())
+				using (var iS = new System.ServiceProcess.ServiceInstaller())
 				{
-					IDictionary state = new Hashtable();
-					try { installer.Uninstall(state); }
-					catch { throw; }
+					iS.ServiceName = "SyncThingService";
+					iGbl.Installers.AddRange(new System.Configuration.Install.Installer[] { iSP, iS });
+					iGbl.Context = new InstallContext(null, new[] { path });
+					iGbl.Uninstall(null);
 				}
 			}
 			catch { throw; }
@@ -115,6 +132,7 @@ namespace SyncThingTray
 
 		public static void StartService()
 		{
+			if (!IsUserAdministrator) { RunAsAdministrator("start"); return; }
 			using (ServiceController controller =
 					new ServiceController(SERVICENAME))
 			{
@@ -126,6 +144,7 @@ namespace SyncThingTray
 						controller.Start();
 						controller.WaitForStatus(ServiceControllerStatus.Running,
 								TimeSpan.FromSeconds(10));
+
 					}
 				}
 				catch { throw; }
@@ -134,6 +153,7 @@ namespace SyncThingTray
 
 		public static void StopService()
 		{
+			if (!IsUserAdministrator) { RunAsAdministrator("stop"); return; }
 			using (ServiceController controller =
 					new ServiceController(SERVICENAME))
 			{
@@ -183,6 +203,7 @@ namespace SyncThingTray
 		public static string MonitorFile { get; private set; }
 		public static string SyncExePath { get; private set; }
 		public static string SyncConfigPath { get; private set; }
+		public static ProcessPriorityClass SyncPriority { get; private set; }
 
 		public static bool IsConfigured
 		{
@@ -204,11 +225,21 @@ namespace SyncThingTray
 						if (ksync == null) return false;
 						SyncExePath = ksync.GetValue("Executable", "") as string;
 						SyncConfigPath = ksync.GetValue("Configuration", "") as string;
+						string priority = ksync.GetValue("Priority", "") as string;
+						switch (priority)
+						{
+							case "Real Time": SyncPriority = ProcessPriorityClass.RealTime; break;
+							case "High": SyncPriority = ProcessPriorityClass.High; break;
+							case "Above Normal": SyncPriority = ProcessPriorityClass.AboveNormal; break;
+							case "Normal": SyncPriority = ProcessPriorityClass.Normal; break;
+							case "Below Normal": SyncPriority = ProcessPriorityClass.BelowNormal; break;
+							case "Idle": SyncPriority = ProcessPriorityClass.Idle; break;
+							default: SyncPriority = ProcessPriorityClass.Normal; break;
+						}
 						return !string.IsNullOrEmpty(SyncExePath) && !string.IsNullOrEmpty(SyncConfigPath);
 					}
 				}
 			}
 		}
-
 	}
 }
