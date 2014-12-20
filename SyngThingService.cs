@@ -131,46 +131,11 @@ namespace SyncThingTray
 
 		static string ShutdownProgram()
 		{
-			string cfgpath = Path.Combine(Program.SyncConfigPath, "config.xml");
-			if (File.Exists(cfgpath))
-			{
-				string url, key;
-				XmlDocument xml = new XmlDocument();
-				xml.Load(cfgpath);
-				XmlElement xr = xml.DocumentElement;
-				var xgs = xr.GetElementsByTagName("gui");
-				if (xgs.Count == 1)
-				{
-					XmlElement xg = (XmlElement)xgs[0];
-					string tls = xg.GetAttribute("tls");
-					var xas = xg.GetElementsByTagName("address");
-					if (xas.Count == 1)
-						url = "http://" + xas[0].InnerText;
-					else
-						return "The http address of Syncthing could not be found in the configuration";
-					xas = xg.GetElementsByTagName("apikey");
-					if (xas.Count == 1)
-						key = xas[0].InnerText;
-					else
-						return "Could not find the API Key in the configuration: Ensure that an API key was generated in the syncthing GUI";
-					HttpClient client = new HttpClient();
-					client.BaseAddress = new Uri(url);
-					client.DefaultRequestHeaders.Accept.Clear();
-					client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-					client.DefaultRequestHeaders.Add("X-API-Key", key);
-					HttpContent cnt = new ByteArrayContent(new byte[0]);
-					var res = client.PostAsync("rest/shutdown", cnt);
-					if (res.Wait(2000))
-						return res.Result.IsSuccessStatusCode ? null : "Error: " + res.Result.ToString();
-					else
-						return null;
-				}
-				else
-					return "The Syncthing configuration cannot be retreived as the gui element could not be found";
-			}
-			else
-				return "The configuration file could not be found: " + cfgpath;
-
+			string res= Program.ReadConfiguration();
+			if (res != null) return res;
+			var apires = API.CallAPIPost("shutdown");
+			if (!apires.Wait(2000)) return null;
+			return apires.Result;
 		}
 
 	}

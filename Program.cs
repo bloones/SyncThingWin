@@ -10,6 +10,7 @@ using System.IO;
 using System.Security.Principal;
 using System.Diagnostics;
 using System.Reflection;
+using System.Xml;
 
 namespace SyncThingTray
 {
@@ -58,6 +59,54 @@ namespace SyncThingTray
 					Application.Run(f);
 					return;
 				}
+				else if (Args[0].ToLower() == "shutdown")
+				{
+					if (IsConfigured)
+					{
+						string res = ReadConfiguration();
+						if (res != null)
+							Application.Run(new frmMessage(res));
+						else
+						{
+							res = API.CallAPIPostSync("shutdown", 2000, "Tineout occured: No response was received from syncthing");
+							if (res != null)
+								Application.Run(new frmMessage(res));
+						}
+						return;
+					}
+				}
+				else if (Args[0].ToLower() == "restart")
+				{
+					if (IsConfigured)
+					{
+						string res = ReadConfiguration();
+						if (res != null)
+							Application.Run(new frmMessage(res));
+						else
+						{
+							res = API.CallAPIPostSync("restart", 2000, "Tineout occured: No response was received from syncthing");
+							if (res != null)
+								Application.Run(new frmMessage(res));
+						}
+						return;
+					}
+				}
+				else if (Args[0].ToLower() == "upgrade")
+				{
+					if (IsConfigured)
+					{
+						string res = ReadConfiguration();
+						if (res != null)
+							Application.Run(new frmMessage(res));
+						else
+						{
+							res = API.CallAPIPostSync("upgrade", 2000, "Tineout occured: No response was received from syncthing");
+							if (res != null)
+								Application.Run(new frmMessage(res));
+						}
+						return;
+					}
+				}
 			}
 			if (Environment.UserInteractive)
 				Application.Run(new frmMain());
@@ -82,10 +131,10 @@ namespace SyncThingTray
 
 		public static void InstallService()
 		{
-			InstallService(ServiceStartMode.Automatic,false, ServiceAccount.LocalSystem, null, null);
+			InstallService(ServiceStartMode.Automatic, false, ServiceAccount.LocalSystem, null, null);
 		}
 
-		public static void InstallService(ServiceStartMode StartMode,bool DelayedStart, ServiceAccount Account, string UserName, string Password)
+		public static void InstallService(ServiceStartMode StartMode, bool DelayedStart, ServiceAccount Account, string UserName, string Password)
 		{
 			if (IsInstalled) return;
 			try
@@ -213,7 +262,7 @@ namespace SyncThingTray
 				MonitorFile = Path.Combine(MonitorFile, "Syncthing Service");
 				if (!Directory.Exists(MonitorFile)) Directory.CreateDirectory(MonitorFile);
 				MonitorFile = Path.Combine(MonitorFile, "Std.out");
-				
+
 				// Check the configuration
 				RegistryKey klm = Registry.LocalMachine;
 				if (klm == null) return false;
@@ -240,6 +289,45 @@ namespace SyncThingTray
 					}
 				}
 			}
+		}
+
+		public static string GuiUrl { get; private set; }
+		public static string APIUrl { get; private set; }
+		public static string APIKey { get; private set; }
+
+		public static string ReadConfiguration()
+		{
+			string cfgpath = Path.Combine(Program.SyncConfigPath, "config.xml");
+			if (File.Exists(cfgpath))
+			{
+				XmlDocument xml = new XmlDocument();
+				xml.Load(cfgpath);
+				XmlElement xr = xml.DocumentElement;
+				var xgs = xr.GetElementsByTagName("gui");
+				if (xgs.Count == 1)
+				{
+					XmlElement xg = (XmlElement)xgs[0];
+					string tls = xg.GetAttribute("tls");
+					var xas = xg.GetElementsByTagName("address");
+					if (xas.Count == 1)
+					{
+						GuiUrl = (tls == "true" ? "https://" : "http://") + xas[0].InnerText;
+						APIUrl = "http://" + xas[0].InnerText;
+					}
+					else
+						return "The http address of Syncthing could not be found in the configuration";
+					xas = xg.GetElementsByTagName("apikey");
+					if (xas.Count == 1)
+						APIKey = xas[0].InnerText;
+					else
+						return "Could not find the API Key in the configuration: Ensure that an API key was generated in the syncthing GUI";
+					return null;
+				}
+				else
+					return "The Syncthing configuration cannot be retreived as the gui element could not be found";
+			}
+			else
+				return "The configuration file could not be found: " + cfgpath;
 		}
 	}
 }

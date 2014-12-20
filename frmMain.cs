@@ -18,9 +18,6 @@ namespace SyncThingTray
 	public partial class frmMain : Form
 	{
 		bool allowclose = false;
-		string gui;
-		string apiurl;
-		string apikey;
 		public frmMain()
 		{
 			InitializeComponent();
@@ -51,7 +48,7 @@ namespace SyncThingTray
 
 		private void showGuiToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			if (!string.IsNullOrWhiteSpace(gui)) Process.Start(gui);
+			if (!string.IsNullOrWhiteSpace(Program.GuiUrl)) Process.Start(Program.GuiUrl);
 		}
 
 		private void stopServiceToolStripMenuItem_Click(object sender, EventArgs e)
@@ -100,30 +97,9 @@ namespace SyncThingTray
 		private void mnuTray_Opening(object sender, CancelEventArgs e)
 		{
 			SetServiceStatus(true);
-			string cfgpath = Path.Combine(Program.SyncConfigPath, "config.xml");
-			if (File.Exists(cfgpath))
-			{
-				XmlDocument xml = new XmlDocument();
-				xml.Load(cfgpath);
-				XmlElement xr = xml.DocumentElement;
-				var xgs = xr.GetElementsByTagName("gui");
-				if (xgs.Count == 1)
-				{
-					XmlElement xg = (XmlElement)xgs[0];
-					string tls = xg.GetAttribute("tls");
-					var xas = xg.GetElementsByTagName("address");
-					if (xas.Count == 1)
-					{
-						gui = (tls == "true" ? "https://" : "http://") + xas[0].InnerText;
-						apiurl = "http://" + xas[0].InnerText;
-					}
-					xas = xg.GetElementsByTagName("apikey");
-					if (xas.Count == 1)
-						apikey = xas[0].InnerText;
-				}
-			}
-			showGuiToolStripMenuItem.Enabled = !string.IsNullOrWhiteSpace(gui);
-			if (string.IsNullOrWhiteSpace(apiurl) || string.IsNullOrWhiteSpace(apikey)||  (!Program.IsRunning && !IsAvailable()))
+			Program.ReadConfiguration();
+			showGuiToolStripMenuItem.Enabled = !string.IsNullOrWhiteSpace(Program.GuiUrl);
+			if (string.IsNullOrWhiteSpace(Program.APIUrl) || string.IsNullOrWhiteSpace(Program.APIKey) || (!Program.IsRunning && !API.IsAvailable))
 			{
 				mnuRestart.Enabled = false;
 				mnuShutdown.Enabled = false;
@@ -137,48 +113,21 @@ namespace SyncThingTray
 			}
 		}
 
-		bool IsAvailable()
-		{
-			var res = CallAPIPost("ping");
-			if (!res.Wait(1000)) return false;
-			return res.Result == null;
-		}
-
 		private async void mnuShutdown_Click(object sender, EventArgs e)
 		{
-			var res = await CallAPIPost("shutdown");
+			var res = await API.CallAPIPost("shutdown");
 			if (res != null) icoTray.ShowBalloonTip(1000, "Syncthing", res, ToolTipIcon.Error);
-		}
-
-		private async Task<string> CallAPIPost(string Query)
-		{
-			if (string.IsNullOrWhiteSpace(apiurl)) return "Syncthing address unavailable";
-			try
-			{
-				HttpClient client = new HttpClient();
-				client.BaseAddress = new Uri(apiurl);
-				client.DefaultRequestHeaders.Accept.Clear();
-				client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-				client.DefaultRequestHeaders.Add("X-API-Key", apikey);
-				HttpContent cnt = new ByteArrayContent(new byte[0]);
-				var res = await client.PostAsync("rest/" + Query, cnt);
-				return res.IsSuccessStatusCode ? null : "Error: " + res.ToString();
-			}
-			catch (HttpRequestException x)
-			{
-				return "Exception: " + x.Message;
-			}
 		}
 
 		private async void mnuUpgrade_Click(object sender, EventArgs e)
 		{
-			var res = await CallAPIPost("upgrade");
+			var res = await API.CallAPIPost("upgrade");
 			if (res != null) icoTray.ShowBalloonTip(1000, "Syncthing", res, ToolTipIcon.Error);
 		}
 
 		private async void mnuRestart_Click(object sender, EventArgs e)
 		{
-			var res = await CallAPIPost("restart");
+			var res = await API.CallAPIPost("restart");
 			if (res != null) icoTray.ShowBalloonTip(1000, "Syncthing", res, ToolTipIcon.Error);
 		}
 
