@@ -60,6 +60,14 @@
 			this.txtPassword = new System.Windows.Forms.TextBox();
 			this.btnSave = new System.Windows.Forms.Button();
 			this.tipHelp = new System.Windows.Forms.ToolTip(this.components);
+			this.chkAutoRestart = new System.Windows.Forms.CheckBox();
+			this.label12 = new System.Windows.Forms.Label();
+			this.numMaxAutoDuration = new System.Windows.Forms.NumericUpDown();
+			this.cmbMaxAutoDuration = new System.Windows.Forms.ComboBox();
+			this.label15 = new System.Windows.Forms.Label();
+			this.numMaxAutoCount = new System.Windows.Forms.NumericUpDown();
+			((System.ComponentModel.ISupportInitialize)(this.numMaxAutoDuration)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numMaxAutoCount)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -217,7 +225,7 @@
 			// 
 			this.btnUninstall.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnUninstall.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnUninstall.Location = new System.Drawing.Point(543, 128);
+			this.btnUninstall.Location = new System.Drawing.Point(543, 159);
 			this.btnUninstall.Name = "btnUninstall";
 			this.btnUninstall.Size = new System.Drawing.Size(80, 23);
 			this.btnUninstall.TabIndex = 8;
@@ -229,9 +237,9 @@
 			// 
 			this.chkAdvanced.Appearance = System.Windows.Forms.Appearance.Button;
 			this.chkAdvanced.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold);
-			this.chkAdvanced.Location = new System.Drawing.Point(339, 99);
+			this.chkAdvanced.Location = new System.Drawing.Point(354, 99);
 			this.chkAdvanced.Name = "chkAdvanced";
-			this.chkAdvanced.Size = new System.Drawing.Size(129, 23);
+			this.chkAdvanced.Size = new System.Drawing.Size(114, 23);
 			this.chkAdvanced.TabIndex = 10;
 			this.chkAdvanced.Text = "Advanced Options";
 			this.chkAdvanced.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -242,7 +250,7 @@
 			// 
 			this.label5.AutoSize = true;
 			this.label5.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label5.Location = new System.Drawing.Point(12, 132);
+			this.label5.Location = new System.Drawing.Point(12, 163);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(93, 14);
 			this.label5.TabIndex = 0;
@@ -257,7 +265,7 @@
             "Automatic",
             "Manual",
             "Disabled"});
-			this.cmbStartup.Location = new System.Drawing.Point(128, 128);
+			this.cmbStartup.Location = new System.Drawing.Point(128, 159);
 			this.cmbStartup.Name = "cmbStartup";
 			this.cmbStartup.Size = new System.Drawing.Size(190, 23);
 			this.cmbStartup.TabIndex = 11;
@@ -266,7 +274,7 @@
 			// 
 			this.label8.AutoSize = true;
 			this.label8.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label8.Location = new System.Drawing.Point(12, 161);
+			this.label8.Location = new System.Drawing.Point(12, 192);
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(98, 14);
 			this.label8.TabIndex = 0;
@@ -281,7 +289,7 @@
             "Local Service",
             "Network Service",
             "User"});
-			this.cmbAccount.Location = new System.Drawing.Point(128, 157);
+			this.cmbAccount.Location = new System.Drawing.Point(128, 188);
 			this.cmbAccount.Name = "cmbAccount";
 			this.cmbAccount.Size = new System.Drawing.Size(190, 23);
 			this.cmbAccount.TabIndex = 11;
@@ -291,7 +299,7 @@
 			// 
 			this.label9.AutoSize = true;
 			this.label9.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label9.Location = new System.Drawing.Point(324, 161);
+			this.label9.Location = new System.Drawing.Point(324, 192);
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(41, 14);
 			this.label9.TabIndex = 0;
@@ -301,7 +309,7 @@
 			// 
 			this.label10.AutoSize = true;
 			this.label10.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label10.Location = new System.Drawing.Point(324, 190);
+			this.label10.Location = new System.Drawing.Point(324, 221);
 			this.label10.Name = "label10";
 			this.label10.Size = new System.Drawing.Size(65, 14);
 			this.label10.TabIndex = 0;
@@ -311,7 +319,7 @@
 			// 
 			this.label11.AutoSize = true;
 			this.label11.Font = new System.Drawing.Font("Cambria", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label11.Location = new System.Drawing.Point(12, 212);
+			this.label11.Location = new System.Drawing.Point(12, 243);
 			this.label11.Name = "label11";
 			this.label11.Size = new System.Drawing.Size(110, 14);
 			this.label11.TabIndex = 0;
@@ -328,7 +336,7 @@
             "Normal",
             "Below Normal",
             "Idle"});
-			this.cmbPriority.Location = new System.Drawing.Point(128, 208);
+			this.cmbPriority.Location = new System.Drawing.Point(128, 239);
 			this.cmbPriority.Name = "cmbPriority";
 			this.cmbPriority.Size = new System.Drawing.Size(190, 23);
 			this.cmbPriority.TabIndex = 11;
@@ -337,18 +345,18 @@
 			// txtLogin
 			// 
 			this.txtLogin.Enabled = false;
-			this.txtLogin.Location = new System.Drawing.Point(395, 157);
+			this.txtLogin.Location = new System.Drawing.Point(395, 188);
 			this.txtLogin.Name = "txtLogin";
-			this.txtLogin.Size = new System.Drawing.Size(227, 23);
+			this.txtLogin.Size = new System.Drawing.Size(228, 23);
 			this.txtLogin.TabIndex = 2;
 			this.txtLogin.TextChanged += new System.EventHandler(this.txtNew_TextChanged);
 			// 
 			// txtPassword
 			// 
 			this.txtPassword.Enabled = false;
-			this.txtPassword.Location = new System.Drawing.Point(395, 186);
+			this.txtPassword.Location = new System.Drawing.Point(395, 217);
 			this.txtPassword.Name = "txtPassword";
-			this.txtPassword.Size = new System.Drawing.Size(227, 23);
+			this.txtPassword.Size = new System.Drawing.Size(228, 23);
 			this.txtPassword.TabIndex = 2;
 			this.txtPassword.TextChanged += new System.EventHandler(this.txtNew_TextChanged);
 			// 
@@ -375,12 +383,87 @@
 			this.tipHelp.ReshowDelay = 0;
 			this.tipHelp.ToolTipIcon = System.Windows.Forms.ToolTipIcon.Info;
 			// 
+			// chkAutoRestart
+			// 
+			this.chkAutoRestart.AutoSize = true;
+			this.chkAutoRestart.Location = new System.Drawing.Point(16, 101);
+			this.chkAutoRestart.Name = "chkAutoRestart";
+			this.chkAutoRestart.Size = new System.Drawing.Size(147, 19);
+			this.chkAutoRestart.TabIndex = 12;
+			this.chkAutoRestart.Text = "Auto restart syncthing";
+			this.chkAutoRestart.UseVisualStyleBackColor = true;
+			this.chkAutoRestart.CheckedChanged += new System.EventHandler(this.chkAutoRestart_CheckedChanged);
+			// 
+			// label12
+			// 
+			this.label12.AutoSize = true;
+			this.label12.Location = new System.Drawing.Point(238, 130);
+			this.label12.Name = "label12";
+			this.label12.Size = new System.Drawing.Size(175, 15);
+			this.label12.TabIndex = 16;
+			this.label12.Text = "shutdown occur in a period of ";
+			// 
+			// numMaxAutoDuration
+			// 
+			this.numMaxAutoDuration.Enabled = false;
+			this.numMaxAutoDuration.Location = new System.Drawing.Point(419, 127);
+			this.numMaxAutoDuration.Maximum = new decimal(new int[] {
+            240,
+            0,
+            0,
+            0});
+			this.numMaxAutoDuration.Name = "numMaxAutoDuration";
+			this.numMaxAutoDuration.Size = new System.Drawing.Size(45, 23);
+			this.numMaxAutoDuration.TabIndex = 14;
+			// 
+			// cmbMaxAutoDuration
+			// 
+			this.cmbMaxAutoDuration.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cmbMaxAutoDuration.Enabled = false;
+			this.cmbMaxAutoDuration.FormattingEnabled = true;
+			this.cmbMaxAutoDuration.Items.AddRange(new object[] {
+            "seconds",
+            "minutes",
+            "hours"});
+			this.cmbMaxAutoDuration.Location = new System.Drawing.Point(470, 127);
+			this.cmbMaxAutoDuration.Name = "cmbMaxAutoDuration";
+			this.cmbMaxAutoDuration.Size = new System.Drawing.Size(86, 23);
+			this.cmbMaxAutoDuration.TabIndex = 15;
+			// 
+			// label15
+			// 
+			this.label15.AutoSize = true;
+			this.label15.Location = new System.Drawing.Point(13, 129);
+			this.label15.Name = "label15";
+			this.label15.Size = new System.Drawing.Size(166, 15);
+			this.label15.TabIndex = 16;
+			this.label15.Text = "Stop the service if more than ";
+			// 
+			// numMaxAutoCount
+			// 
+			this.numMaxAutoCount.Enabled = false;
+			this.numMaxAutoCount.Location = new System.Drawing.Point(185, 127);
+			this.numMaxAutoCount.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+			this.numMaxAutoCount.Name = "numMaxAutoCount";
+			this.numMaxAutoCount.Size = new System.Drawing.Size(47, 23);
+			this.numMaxAutoCount.TabIndex = 13;
+			// 
 			// frmInstall
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(635, 128);
+			this.ClientSize = new System.Drawing.Size(635, 155);
+			this.Controls.Add(this.cmbMaxAutoDuration);
+			this.Controls.Add(this.numMaxAutoDuration);
+			this.Controls.Add(this.chkAutoRestart);
+			this.Controls.Add(this.label15);
 			this.Controls.Add(this.cmbPriority);
+			this.Controls.Add(this.label12);
+			this.Controls.Add(this.numMaxAutoCount);
 			this.Controls.Add(this.cmbAccount);
 			this.Controls.Add(this.cmbStartup);
 			this.Controls.Add(this.chkAdvanced);
@@ -413,6 +496,8 @@
 			this.Name = "frmInstall";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Syncthing Service Configuration";
+			((System.ComponentModel.ISupportInitialize)(this.numMaxAutoDuration)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numMaxAutoCount)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -450,5 +535,11 @@
 		private System.Windows.Forms.TextBox txtPassword;
 		private System.Windows.Forms.Button btnSave;
 		private System.Windows.Forms.ToolTip tipHelp;
+		private System.Windows.Forms.CheckBox chkAutoRestart;
+		private System.Windows.Forms.Label label12;
+		private System.Windows.Forms.NumericUpDown numMaxAutoDuration;
+		private System.Windows.Forms.ComboBox cmbMaxAutoDuration;
+		private System.Windows.Forms.Label label15;
+		private System.Windows.Forms.NumericUpDown numMaxAutoCount;
 	}
 }

@@ -17,6 +17,7 @@ namespace SyncThingTray
 	public partial class SyngThingService : ServiceBase
 	{
 		Process syncthing;
+		List<DateTime> shutdowns;
 		public SyngThingService()
 		{
 			InitializeComponent();
@@ -28,25 +29,58 @@ namespace SyncThingTray
 		{
 			if (Program.IsConfigured)
 			{
-				ProcessStartInfo pinfo = new ProcessStartInfo(Program.SyncExePath, "-home=\"" + Program.SyncConfigPath + "\"");
-				pinfo.WindowStyle = ProcessWindowStyle.Hidden;
-				pinfo.RedirectStandardOutput = true;
-				pinfo.RedirectStandardInput = true;
-				pinfo.UseShellExecute = false;
-				syncthing = new Process();
-				syncthing.EnableRaisingEvents = true;
-				syncthing.OutputDataReceived += syncthing_OutputDataReceived;
-				syncthing.Exited += syncthing_Exited;
-				syncthing.StartInfo = pinfo;
-				syncthing.Start();
-				syncthing.BeginOutputReadLine();
-				syncthing.PriorityClass = Program.SyncPriority;
+				shutdowns = null;
+				StartSyncThing();
 			}
+		}
+
+		void StartSyncThing()
+		{
+			ProcessStartInfo pinfo = new ProcessStartInfo(Program.SyncExePath, "-home=\"" + Program.SyncConfigPath + "\"");
+			pinfo.WindowStyle = ProcessWindowStyle.Hidden;
+			pinfo.RedirectStandardOutput = true;
+			pinfo.RedirectStandardInput = true;
+			pinfo.UseShellExecute = false;
+			syncthing = new Process();
+			syncthing.EnableRaisingEvents = true;
+			syncthing.OutputDataReceived += syncthing_OutputDataReceived;
+			syncthing.Exited += syncthing_Exited;
+			syncthing.StartInfo = pinfo;
+			syncthing.Start();
+			syncthing.BeginOutputReadLine();
+			syncthing.PriorityClass = Program.SyncPriority;
 		}
 
 		void syncthing_Exited(object sender, EventArgs e)
 		{
-			Stop();
+			string reason;
+			if (Program.AutoRestart)
+			{
+				if (Program.AutoRestartCount > 0)
+				{
+					if (shutdowns == null) shutdowns = new List<DateTime>();
+					shutdowns.Add(DateTime.Now);
+					shutdowns.RemoveAll(d => d < (DateTime.Now - Program.AutoRestartPeriod));
+					reason = shutdowns.Count <= Program.AutoRestartCount ? null : "The maximum number of shutdown has been reached";
+				}
+				else
+					reason = null;
+			}
+			else
+				reason = "The service is not configured to restart";
+			if (reason == null)
+			{
+				EventLog.WriteEntry("Syncthing has stopped and is being restarted", EventLogEntryType.Warning);
+				syncthing.OutputDataReceived -= syncthing_OutputDataReceived;
+				syncthing.Exited -= syncthing_Exited;
+				syncthing.Dispose();
+				StartSyncThing();
+			}
+			else
+			{
+				EventLog.WriteEntry("Syncthing has stopped and will not be restarted:\n" + reason, EventLogEntryType.Warning);
+				Stop();
+			}
 		}
 
 		void syncthing_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -59,6 +93,8 @@ namespace SyncThingTray
 			if (!syncthing.HasExited)
 			{
 				syncthing.CancelOutputRead();
+				syncthing.OutputDataReceived -= syncthing_OutputDataReceived;
+				syncthing.Exited -= syncthing_Exited;
 
 				var res = ShutdownProgram();
 				if (res == null)

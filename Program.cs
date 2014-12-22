@@ -253,6 +253,9 @@ namespace SyncThingTray
 		public static string SyncExePath { get; private set; }
 		public static string SyncConfigPath { get; private set; }
 		public static ProcessPriorityClass SyncPriority { get; private set; }
+		public static bool AutoRestart { get; private set; }
+		public static int AutoRestartCount { get; private set; }
+		public static TimeSpan AutoRestartPeriod { get; private set; }
 
 		public static bool IsConfigured
 		{
@@ -284,6 +287,34 @@ namespace SyncThingTray
 							case "Below Normal": SyncPriority = ProcessPriorityClass.BelowNormal; break;
 							case "Idle": SyncPriority = ProcessPriorityClass.Idle; break;
 							default: SyncPriority = ProcessPriorityClass.Normal; break;
+						}
+						string[] autos = (ksync.GetValue("Autorestart", "") as string).Split(new char[] { ':' }, 2);
+						if ((autos.Length < 2) || (autos[0] != "Yes"))
+							AutoRestart = false;
+						else if (autos[1] == "unlimited")
+						{
+							AutoRestart = true;
+							AutoRestartCount = 0;
+							AutoRestartPeriod = TimeSpan.Zero;
+						}
+						else
+						{
+							string[] opts = autos[1].Split(',');
+							int t; TimeSpan d;
+							if (!int.TryParse(opts[0], out t))
+								t = 0;
+							if ((opts.Length<2)|| !TimeSpan.TryParse(opts[1], out d))
+								d = TimeSpan.Zero;
+							if ((t == 0) || (d == TimeSpan.Zero))
+							{
+								AutoRestart = false;
+							}
+							else
+							{
+								AutoRestart = true;
+								AutoRestartCount = t;
+								AutoRestartPeriod = d;
+							}
 						}
 						return !string.IsNullOrEmpty(SyncExePath) && !string.IsNullOrEmpty(SyncConfigPath);
 					}

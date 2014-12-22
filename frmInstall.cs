@@ -103,6 +103,33 @@ namespace SyncThingTray
 					}
 				}
 				txtNew.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Syncthing", "Data");
+				cmbPriority.SelectedItem = "Normal";
+			}
+
+			if (Program.AutoRestart)
+			{
+				chkAutoRestart.Checked = true;
+				numMaxAutoCount.Value = Program.AutoRestartCount;
+				if (Program.AutoRestartPeriod.Hours > 0)
+				{
+					numMaxAutoDuration.Value = Program.AutoRestartPeriod.Hours;
+					cmbMaxAutoDuration.SelectedItem = "hours";
+				}
+				else if (Program.AutoRestartPeriod.Minutes > 0)
+				{
+					numMaxAutoDuration.Value = Program.AutoRestartPeriod.Minutes;
+					cmbMaxAutoDuration.SelectedItem = "minutes";
+				}
+				else if (Program.AutoRestartPeriod.Seconds > 0)
+				{
+					numMaxAutoDuration.Value = Program.AutoRestartPeriod.Seconds;
+					cmbMaxAutoDuration.SelectedItem = "seconds";
+				}
+				else
+				{
+					numMaxAutoDuration.Value = 0;
+					cmbMaxAutoDuration.SelectedItem = null;
+				}
 			}
 		}
 
@@ -160,14 +187,7 @@ namespace SyncThingTray
 			if (!string.IsNullOrWhiteSpace(txtCurrent.Text))
 				CopyDirectory(txtCurrent.Text, txtNew.Text);
 
-			RegistryKey klm = Registry.LocalMachine;
-			using (RegistryKey ksoft = klm.CreateSubKey("SOFTWARE"))
-			using (RegistryKey ksync = ksoft.CreateSubKey("Syncthing Service"))
-				{
-					ksync.SetValue("Executable", txtExecutable.Text);
-					ksync.SetValue("Configuration", txtNew.Text);
-					ksync.SetValue("Priority", cmbPriority.SelectedItem);
-				}
+			bool saved = SaveConfig();
 
 			ServiceStartMode StartMode;
 			ServiceAccount Account;
@@ -193,7 +213,7 @@ namespace SyncThingTray
 			Program.InstallService(StartMode, DelayedStart, Account, txtLogin.Text, txtPassword.Text);
 			Program.StartService();
 			installed = true;
-			Close();
+			if(saved) Close();
 		}
 
 		void CopyDirectory(string Source, string Destination)
@@ -211,23 +231,49 @@ namespace SyncThingTray
 
 		private void chkAdvanced_CheckedChanged(object sender, EventArgs e)
 		{
-			this.Height = chkAdvanced.Checked ? 281 : 167;
+			this.Height = chkAdvanced.Checked ? 307 : 194;
 		}
 
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			if (!string.IsNullOrWhiteSpace(txtCurrent.Text))
-				CopyDirectory(txtCurrent.Text, txtNew.Text);
+			if(SaveConfig())			Close();
+		}
 
+		bool SaveConfig()
+		{
 			RegistryKey klm = Registry.LocalMachine;
+			if (klm == null) return false;
 			using (RegistryKey ksoft = klm.CreateSubKey("SOFTWARE"))
-			using (RegistryKey ksync = ksoft.CreateSubKey("Syncthing Service"))
 			{
-				ksync.SetValue("Executable", txtExecutable.Text);
-				ksync.SetValue("Configuration", txtNew.Text);
-				ksync.SetValue("Priority", cmbPriority.SelectedItem);
+				if (ksoft == null) return false;
+				using (RegistryKey ksync = ksoft.CreateSubKey("Syncthing Service"))
+				{
+					if (ksync == null) return false;
+					ksync.SetValue("Executable", txtExecutable.Text);
+					ksync.SetValue("Configuration", txtNew.Text);
+					ksync.SetValue("Priority", string.IsNullOrWhiteSpace(cmbPriority.SelectedItem as string) ? "Normal" : cmbPriority.SelectedItem);
+					if (chkAutoRestart.Checked)
+					{
+						string val = "Yes:";
+						if ((numMaxAutoCount.Value == 0) || (numMaxAutoDuration.Value == 0) || (cmbMaxAutoDuration.SelectedItem == null))
+							val += "unlimited";
+						else
+						{
+							val += ((int)numMaxAutoCount.Value).ToString()+",";
+							switch (cmbMaxAutoDuration.SelectedItem as string)
+							{
+								case "seconds": val += (new TimeSpan(0, 0, (int)numMaxAutoDuration.Value)).ToString("h\\:m\\:s"); break;
+								case "minutes": val += (new TimeSpan(0, (int)numMaxAutoDuration.Value, 0)).ToString("h\\:m\\:s"); break;
+								case "hours": val += (new TimeSpan( (int)numMaxAutoDuration.Value,0, 0)).ToString("h\\:m\\:s"); break;
+							}
+						}
+						ksync.SetValue("Autorestart", val);
+					}
+					else
+						ksync.SetValue("Autorestart", "No");
+				}
 			}
-			Close();
+			return true;
 		}
 
 		private void cmbPriority_SelectedIndexChanged(object sender, EventArgs e)
@@ -255,6 +301,13 @@ namespace SyncThingTray
 				txtLogin.Enabled = false;
 				txtPassword.Enabled = false;
 			}
+		}
+
+		private void chkAutoRestart_CheckedChanged(object sender, EventArgs e)
+		{
+			numMaxAutoCount.Enabled = chkAutoRestart.Checked;
+			numMaxAutoDuration.Enabled = chkAutoRestart.Checked;
+			cmbMaxAutoDuration.Enabled = chkAutoRestart.Checked;
 		}
 	}
 }
