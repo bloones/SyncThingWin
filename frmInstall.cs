@@ -162,7 +162,7 @@ namespace SyncThingTray
 		private void btnCurrent_Click(object sender, EventArgs e)
 		{
 			dlgSelectFolder.ShowNewFolderButton = false;
-			dlgSelectFolder.Description = "Select the folder containig the current configuration";
+			dlgSelectFolder.Description = "Select the folder containing the current configuration";
 			if (dlgSelectFolder.ShowDialog() == DialogResult.OK)
 				txtCurrent.Text = dlgSelectFolder.SelectedPath;
 		}

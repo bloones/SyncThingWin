@@ -103,7 +103,7 @@ namespace SyncThingTray
 				}
 				else
 				{
-					this.EventLog.WriteEntry("An error occured when trying to shutdown the syncthing.exe process.\n" + res, EventLogEntryType.Error);
+					this.EventLog.WriteEntry("An error occurred when trying to shutdown the syncthing.exe process.\n" + res, EventLogEntryType.Error);
 				}
 
 				if (!syncthing.HasExited)
@@ -114,7 +114,7 @@ namespace SyncThingTray
 					}
 					catch (Exception x)
 					{
-						this.EventLog.WriteEntry("An error occured when trying to stop the syncthing.exe process.\nException: (" + x.GetType().ToString() + ") " + x.Message, EventLogEntryType.Error);
+						this.EventLog.WriteEntry("An error occurred when trying to stop the syncthing.exe process.\nException: (" + x.GetType().ToString() + ") " + x.Message, EventLogEntryType.Error);
 					}
 					if (!syncthing.HasExited)
 					{

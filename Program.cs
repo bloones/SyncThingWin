@@ -68,7 +68,7 @@ namespace SyncThingTray
 							Application.Run(new frmMessage(res));
 						else
 						{
-							res = API.CallAPIPostSync("shutdown", 2000, "Tineout occured: No response was received from syncthing");
+							res = API.CallAPIPostSync("shutdown", 2000, "Timeout occurred: No response was received from syncthing");
 							if (res != null)
 								Application.Run(new frmMessage(res));
 						}
@@ -84,7 +84,7 @@ namespace SyncThingTray
 							Application.Run(new frmMessage(res));
 						else
 						{
-							res = API.CallAPIPostSync("restart", 2000, "Tineout occured: No response was received from syncthing");
+							res = API.CallAPIPostSync("restart", 2000, "Timeout occurred: No response was received from syncthing");
 							if (res != null)
 								Application.Run(new frmMessage(res));
 						}
@@ -100,7 +100,7 @@ namespace SyncThingTray
 							Application.Run(new frmMessage(res));
 						else
 						{
-							res = API.CallAPIPostSync("upgrade", 2000, "Tineout occured: No response was received from syncthing");
+							res = API.CallAPIPostSync("upgrade", 2000, "Timeout occurred: No response was received from syncthing");
 							if (res != null)
 								Application.Run(new frmMessage(res));
 						}
@@ -355,7 +355,7 @@ namespace SyncThingTray
 					return null;
 				}
 				else
-					return "The Syncthing configuration cannot be retreived as the gui element could not be found";
+					return "The Syncthing configuration cannot be retrieved as the gui element could not be found";
 			}
 			else
 				return "The configuration file could not be found: " + cfgpath;
